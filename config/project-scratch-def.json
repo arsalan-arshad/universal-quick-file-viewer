@@ -1,0 +1,10 @@
+{
+  "orgName": "Universal Quick File Viewer Scratch Org",
+  "edition": "Developer",
+  "features": ["EnableSetPasswordInApi"],
+  "settings": {
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
+    }
+  }
+}
