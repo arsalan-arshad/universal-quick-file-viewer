@@ -1,0 +1,478 @@
+<template>
+    <lightning-card icon-name="standard:file" class="slds-card_boundary main-card">
+        <!-- Card Header Title & Action Buttons -->
+        <div slot="title" class="slds-media slds-media_center slds-has-flexi-truncate">
+            <div class="slds-media__body">
+                <h2 class="slds-card__header-title">
+                    <span class="slds-text-heading_small slds-truncate title-text">{componentTitle}</span>
+                    <lightning-badge label={fileCountLabel} class="slds-m-left_small count-badge"></lightning-badge>
+                </h2>
+            </div>
+        </div>
+
+        <div slot="actions">
+            <lightning-button-group>
+                <lightning-button-icon
+                    icon-name={viewModeIcon}
+                    alternative-text={viewModeAlternativeText}
+                    title={viewModeAlternativeText}
+                    onclick={toggleViewMode}
+                ></lightning-button-icon>
+                <lightning-button-icon
+                    icon-name="utility:refresh"
+                    alternative-text="Refresh Files"
+                    title="Refresh Files"
+                    onclick={handleRefresh}
+                ></lightning-button-icon>
+                <template if:true={enableUploader}>
+                    <lightning-button
+                        label="Upload Files"
+                        icon-name="utility:upload"
+                        variant="brand"
+                        onclick={toggleUploaderModal}
+                    ></lightning-button>
+                </template>
+            </lightning-button-group>
+        </div>
+
+        <!-- Toolbar: Search, Filters, and Bulk Selection Controls -->
+        <div class="slds-p-horizontal_medium slds-p-bottom_small toolbar-container">
+            <div class="slds-grid slds-wrap slds-grid_vertical-align-center slds-gutters_x-small">
+                <!-- Search Input -->
+                <div class="slds-col slds-size_1-1 slds-medium-size_4-12 slds-m-bottom_x-small">
+                    <lightning-input
+                        type="search"
+                        placeholder="Search files..."
+                        value={searchTerm}
+                        onchange={handleSearchChange}
+                        variant="label-hidden"
+                    ></lightning-input>
+                </div>
+
+                <!-- Category Pills -->
+                <div class="slds-col slds-size_1-1 slds-medium-size_5-12 slds-m-bottom_x-small category-pill-group">
+                    <template for:each={categoryTabs} for:item="tab">
+                        <button
+                            key={tab.key}
+                            class={tab.buttonClass}
+                            data-key={tab.key}
+                            onclick={handleCategorySelect}
+                        >
+                            {tab.label}
+                            <span class="pill-count">({tab.count})</span>
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Bulk Selection & Bulk Download -->
+                <div class="slds-col slds-size_1-1 slds-medium-size_3-12 slds-m-bottom_x-small slds-text-align_right bulk-actions">
+                    <template if:true={hasSelectedFiles}>
+                        <lightning-button
+                            data-action="bulk-download"
+                            variant="success"
+                            label={bulkDownloadButtonLabel}
+                            icon-name="utility:download"
+                            onclick={handleBulkDownload}
+                            class="slds-m-right_x-small bulk-download-btn"
+                        ></lightning-button>
+                        <lightning-button-icon
+                            data-action="clear-selection"
+                            icon-name="utility:clear"
+                            variant="border-filled"
+                            alternative-text="Clear Selection"
+                            title="Clear Selection"
+                            onclick={handleClearSelection}
+                        ></lightning-button-icon>
+                    </template>
+                    <template if:false={hasSelectedFiles}>
+                        <template if:true={hasFilteredFiles}>
+                            <lightning-button
+                                data-action="select-all"
+                                variant="base"
+                                label="Select All"
+                                icon-name="utility:check"
+                                onclick={handleSelectAll}
+                            ></lightning-button>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <template if:true={isLoading}>
+            <div class="spinner-container slds-p-around_large">
+                <lightning-spinner alternative-text="Loading files" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- Main Files Content Area -->
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <!-- Empty State -->
+            <template if:true={isEmptyState}>
+                <div class="slds-illustration slds-illustration_small slds-p-around_large empty-illustration">
+                    <div class="empty-icon-wrap">
+                        <lightning-icon icon-name="utility:file" size="large" variant="neutral"></lightning-icon>
+                    </div>
+                    <h3 class="slds-text-heading_medium slds-m-top_small">{emptyStateTitle}</h3>
+                    <p class="slds-text-body_regular slds-text-color_weak slds-m-top_xx-small">
+                        {emptyStateSubtitle}
+                    </p>
+                    <template if:true={enableUploader}>
+                        <div class="slds-m-top_medium">
+                            <lightning-file-upload
+                                label="Upload Files"
+                                name="fileUploaderEmpty"
+                                record-id={recordId}
+                                onuploadfinished={handleUploadFinished}
+                            ></lightning-file-upload>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Grid Layout -->
+            <template if:true={isGridLayout}>
+                <div class="file-grid">
+                    <template for:each={filteredFiles} for:item="file">
+                        <div key={file.contentDocumentId} class={file.cardClass}>
+                            <!-- Checkbox Selector -->
+                            <div class="checkbox-overlay">
+                                <lightning-input
+                                    type="checkbox"
+                                    checked={file.isSelected}
+                                    data-id={file.contentDocumentId}
+                                    onchange={handleFileCheckboxToggle}
+                                    variant="label-hidden"
+                                ></lightning-input>
+                            </div>
+
+                            <!-- Thumbnail Preview Zone -->
+                            <div class="thumbnail-container" data-id={file.contentDocumentId} onclick={handleOpenLightbox}>
+                                <template if:true={file.isImage}>
+                                    <img src={file.thumbnailUrl} alt={file.title} class="thumbnail-image" />
+                                </template>
+                                <template if:false={file.isImage}>
+                                    <div class="doc-icon-container">
+                                        <lightning-icon icon-name={file.sldsIcon} size="large"></lightning-icon>
+                                        <span class="ext-badge">{file.displayExtension}</span>
+                                    </div>
+                                </template>
+                                <div class="hover-preview-overlay">
+                                    <lightning-icon icon-name="utility:preview" size="small" variant="inverse"></lightning-icon>
+                                    <span class="preview-text">Quick View</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Info Details -->
+                            <div class="card-details">
+                                <div class="title-row" title={file.title}>
+                                    <span class="file-title">{file.title}</span>
+                                </div>
+                                <div class="meta-row">
+                                    <span class="meta-size">{file.formattedSize}</span>
+                                    <span class="meta-date">{file.formattedDate}</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Bottom Action Row -->
+                            <div class="card-actions-bar">
+                                <lightning-button-icon
+                                    icon-name="utility:preview"
+                                    variant="bare"
+                                    size="small"
+                                    alternative-text="Preview"
+                                    data-id={file.contentDocumentId}
+                                    onclick={handleOpenLightbox}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    icon-name="utility:download"
+                                    variant="bare"
+                                    size="small"
+                                    alternative-text="Download"
+                                    data-url={file.downloadUrl}
+                                    onclick={handleSingleDownload}
+                                ></lightning-button-icon>
+                                <lightning-button-menu
+                                    alternative-text="More Actions"
+                                    menu-alignment="right"
+                                    icon-size="x-small"
+                                    data-id={file.contentDocumentId}
+                                    data-title={file.title}
+                                    onselect={handleCardMenuSelect}
+                                >
+                                    <lightning-menu-item value="rename" label="Rename File" icon-name="utility:edit"></lightning-menu-item>
+                                    <lightning-menu-item value="delete" label="Delete File" icon-name="utility:delete"></lightning-menu-item>
+                                    <lightning-menu-item value="openRecord" label="View in Salesforce" icon-name="utility:new_window"></lightning-menu-item>
+                                </lightning-button-menu>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- List Layout -->
+            <template if:true={isListLayout}>
+                <div class="file-list-container">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-no-row-hover file-table">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th style="width: 3.25rem;">
+                                    <lightning-input
+                                        type="checkbox"
+                                        checked={isAllSelected}
+                                        onchange={handleMasterCheckboxToggle}
+                                        variant="label-hidden"
+                                    ></lightning-input>
+                                </th>
+                                <th scope="col"><div class="slds-truncate">Title</div></th>
+                                <th scope="col" style="width: 7rem;"><div class="slds-truncate">Type</div></th>
+                                <th scope="col" style="width: 6rem;"><div class="slds-truncate">Size</div></th>
+                                <th scope="col" style="width: 8rem;"><div class="slds-truncate">Created</div></th>
+                                <th scope="col" style="width: 5rem;" class="slds-text-align_right"><div class="slds-truncate">Actions</div></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredFiles} for:item="file">
+                                <tr key={file.contentDocumentId} class={file.rowClass}>
+                                    <td>
+                                        <lightning-input
+                                            type="checkbox"
+                                            checked={file.isSelected}
+                                            data-id={file.contentDocumentId}
+                                            onchange={handleFileCheckboxToggle}
+                                            variant="label-hidden"
+                                        ></lightning-input>
+                                    </td>
+                                    <td>
+                                        <div class="slds-grid slds-grid_vertical-align-center">
+                                            <lightning-icon icon-name={file.sldsIcon} size="x-small" class="slds-m-right_x-small"></lightning-icon>
+                                            <a href="javascript:void(0);" data-id={file.contentDocumentId} onclick={handleOpenLightbox} class="slds-truncate file-list-link">
+                                                {file.title}
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td><span class="slds-badge slds-badge_lightest">{file.displayExtension}</span></td>
+                                    <td>{file.formattedSize}</td>
+                                    <td>{file.formattedDate}</td>
+                                    <td class="slds-text-align_right">
+                                        <lightning-button-icon
+                                            icon-name="utility:preview"
+                                            variant="bare"
+                                            size="small"
+                                            alternative-text="Preview"
+                                            data-id={file.contentDocumentId}
+                                            onclick={handleOpenLightbox}
+                                        ></lightning-button-icon>
+                                        <lightning-button-icon
+                                            icon-name="utility:download"
+                                            variant="bare"
+                                            size="small"
+                                            alternative-text="Download"
+                                            data-url={file.downloadUrl}
+                                            onclick={handleSingleDownload}
+                                        ></lightning-button-icon>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+
+    <!-- FULLSCREEN LIGHTBOX MODAL -->
+    <template if:true={isLightboxOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_large lightbox-modal">
+            <div class="slds-modal__container lightbox-container">
+                <!-- Lightbox Header -->
+                <header class="slds-modal__header lightbox-header">
+                    <div class="slds-grid slds-grid_vertical-align-center">
+                        <div class="slds-col slds-has-flexi-truncate">
+                            <h2 class="slds-text-heading_medium slds-truncate lightbox-title" title={activeFile.title}>
+                                {activeFile.title}
+                            </h2>
+                            <p class="slds-m-top_xxx-small lightbox-sub">
+                                <span class="slds-badge slds-m-right_x-small">{activeFile.displayExtension}</span>
+                                <span>{activeFile.formattedSize}</span> •
+                                <span class="slds-m-left_x-small">File {activeFileIndexHuman} of {totalFilesCount}</span>
+                            </p>
+                        </div>
+                        <div class="slds-col slds-no-flex">
+                            <lightning-button-group>
+                                <lightning-button-icon
+                                    icon-name="utility:download"
+                                    alternative-text="Download This File"
+                                    title="Download This File"
+                                    data-url={activeFile.downloadUrl}
+                                    onclick={handleSingleDownload}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    icon-name="utility:new_window"
+                                    alternative-text="Open in Salesforce"
+                                    title="Open in Salesforce"
+                                    onclick={handleOpenInSalesforce}
+                                ></lightning-button-icon>
+                                <lightning-button-icon
+                                    icon-name="utility:close"
+                                    alternative-text="Close Preview (Esc)"
+                                    title="Close Preview (Esc)"
+                                    onclick={handleCloseLightbox}
+                                ></lightning-button-icon>
+                            </lightning-button-group>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Lightbox Body -->
+                <div class="slds-modal__content slds-p-around_medium lightbox-content">
+                    <!-- Left Navigation Arrow -->
+                    <button class="nav-arrow nav-arrow-left" onclick={handlePrevFile} title="Previous File (Left Arrow)">
+                        <lightning-icon icon-name="utility:chevronleft" size="medium" variant="inverse"></lightning-icon>
+                    </button>
+
+                    <!-- Preview Frame -->
+                    <div class="lightbox-viewer">
+                        <template if:true={activeFile.isImage}>
+                            <img src={activeFile.thumbnailUrl} alt={activeFile.title} class="lightbox-image" />
+                        </template>
+                        <template if:false={activeFile.isImage}>
+                            <template if:true={activeFile.isPdf}>
+                                <div class="pdf-viewer-placeholder">
+                                    <lightning-icon icon-name="doctype:pdf" size="large"></lightning-icon>
+                                    <h3 class="slds-text-heading_small slds-m-top_medium">{activeFile.title}</h3>
+                                    <p class="slds-text-body_regular slds-m-top_x-small slds-m-bottom_medium">
+                                        PDF Document ({activeFile.formattedSize})
+                                    </p>
+                                    <lightning-button
+                                        label="Download to View Full PDF"
+                                        variant="brand"
+                                        icon-name="utility:download"
+                                        data-url={activeFile.downloadUrl}
+                                        onclick={handleSingleDownload}
+                                    ></lightning-button>
+                                </div>
+                            </template>
+                            <template if:false={activeFile.isPdf}>
+                                <div class="generic-file-viewer">
+                                    <lightning-icon icon-name={activeFile.sldsIcon} size="large"></lightning-icon>
+                                    <h3 class="slds-text-heading_medium slds-m-top_medium">{activeFile.title}</h3>
+                                    <p class="slds-text-body_regular slds-m-top_x-small slds-m-bottom_medium">
+                                        {activeFile.displayExtension} File • {activeFile.formattedSize}
+                                    </p>
+                                    <lightning-button
+                                        label="Download File"
+                                        variant="brand"
+                                        icon-name="utility:download"
+                                        data-url={activeFile.downloadUrl}
+                                        onclick={handleSingleDownload}
+                                    ></lightning-button>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+
+                    <!-- Right Navigation Arrow -->
+                    <button class="nav-arrow nav-arrow-right" onclick={handleNextFile} title="Next File (Right Arrow)">
+                        <lightning-icon icon-name="utility:chevronright" size="medium" variant="inverse"></lightning-icon>
+                    </button>
+                </div>
+
+                <!-- Lightbox Filmstrip Thumbnail Bar -->
+                <footer class="slds-modal__footer lightbox-footer">
+                    <div class="filmstrip-scroll">
+                        <template for:each={filteredFiles} for:item="f" for:index="idx">
+                            <div
+                                key={f.contentDocumentId}
+                                class={f.filmstripClass}
+                                data-id={f.contentDocumentId}
+                                onclick={handleFilmstripSelect}
+                            >
+                                <template if:true={f.isImage}>
+                                    <img src={f.thumbnailUrl} alt={f.title} class="filmstrip-thumb-img" />
+                                </template>
+                                <template if:false={f.isImage}>
+                                    <div class="filmstrip-doc-thumb">
+                                        <lightning-icon icon-name={f.sldsIcon} size="x-small"></lightning-icon>
+                                        <span class="filmstrip-ext">{f.displayExtension}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open lightbox-backdrop"></div>
+    </template>
+
+    <!-- UPLOAD MODAL -->
+    <template if:true={isUploaderModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Upload Files to Record</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_large slds-text-align_center">
+                    <p class="slds-m-bottom_medium slds-text-color_weak">
+                        Drop files or click below to attach files directly to this record.
+                    </p>
+                    <lightning-file-upload
+                        label="Select Files"
+                        name="modalUploader"
+                        multiple
+                        record-id={recordId}
+                        onuploadfinished={handleUploadFinished}
+                    ></lightning-file-upload>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Close" onclick={toggleUploaderModal}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- RENAME FILE MODAL -->
+    <template if:true={isRenameModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Rename File</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <lightning-input
+                        label="New File Title"
+                        value={newFileTitle}
+                        onchange={handleNewTitleChange}
+                    ></lightning-input>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={handleCloseRenameModal} class="slds-m-right_x-small"></lightning-button>
+                    <lightning-button label="Save Title" variant="brand" onclick={handleSaveFileRename}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <template if:true={isDeleteModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open slds-modal_small">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header slds-theme_error slds-theme_alert-texture">
+                    <h2 class="slds-text-heading_medium">Confirm Deletion</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p>Are you sure you want to delete <strong>{fileToDeleteTitle}</strong>? This action cannot be undone.</p>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" onclick={handleCloseDeleteModal} class="slds-m-right_x-small"></lightning-button>
+                    <lightning-button label="Delete File" variant="destructive" onclick={handleConfirmDelete}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

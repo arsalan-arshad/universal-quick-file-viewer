@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>61.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Universal Quick File Viewer &amp; Bulk Downloader</masterLabel>
+    <description>Fast visual thumbnail gallery, full-screen lightbox previewer, and 1-click bulk ZIP download for record attachments.</description>
+    <targets>
+        <target>lightning__RecordPage</target>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage,lightning__AppPage,lightning__HomePage">
+            <property
+                name="title"
+                type="String"
+                label="Component Title"
+                default="Files &amp; Attachments"
+                description="Header title displayed on the component card."
+            />
+            <property
+                name="cardLayout"
+                type="String"
+                label="Default Layout"
+                default="Grid"
+                datasource="Grid,List"
+                description="Choose whether files default to a responsive thumbnail Grid or a compact List."
+            />
+            <property
+                name="defaultFilter"
+                type="String"
+                label="Default Category Filter"
+                default="ALL"
+                datasource="ALL,IMAGES,PDFS,DOCUMENTS,SPREADSHEETS"
+                description="Default file type category selected on page load."
+            />
+            <property
+                name="enableBulkDownload"
+                type="Boolean"
+                label="Enable 1-Click Bulk ZIP Download"
+                default="true"
+                description="Allows users to select multiple files and download them together in a single ZIP archive."
+            />
+            <property
+                name="enableUploader"
+                type="Boolean"
+                label="Enable Direct File Uploader"
+                default="true"
+                description="Displays upload buttons and drag-drop zone to attach new files to the record."
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>
