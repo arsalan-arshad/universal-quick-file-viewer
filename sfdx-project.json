@@ -1,15 +1,20 @@
 {
   "packageDirectories": [
     {
+      "versionName": "ver 0.1",
+      "versionNumber": "0.1.0.NEXT",
       "path": "force-app",
       "default": true,
       "package": "UniversalQuickFileViewer",
-      "versionName": "ver 0.1",
-      "versionNumber": "0.1.0.NEXT"
+      "versionDescription": "Universal Quick File Viewer & Bulk Downloader LWC and Apex suite"
     }
   ],
   "name": "universal-quick-file-viewer",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "61.0"
+  "sourceApiVersion": "61.0",
+  "packageAliases": {
+    "UniversalQuickFileViewer": "0Hog70000003qjdCAA",
+    "UniversalQuickFileViewer@0.1.0-1": "04tg7000000WDi5AAG"
+  }
 }

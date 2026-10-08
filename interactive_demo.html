@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Quick File Viewer - Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/design-system/2.22.1/styles/salesforce-lightning-design-system.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 0;
+            color: #181818;
+        }
+
+        .record-header {
+            background: #ffffff;
+            border-bottom: 1px solid #d8dde6;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .record-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #080707;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .record-badge {
+            background: #0176d3;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .stage-badge {
+            background: #2e844a;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 16px;
+        }
+
+        .slds-card {
+            background: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #dddbda;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e5e5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-badge {
+            background: #0176d3;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .toolbar {
+            padding: 12px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .search-box {
+            width: 240px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 6px 12px 6px 30px;
+            border: 1px solid #dddbda;
+            border-radius: 4px;
+            font-size: 0.825rem;
+            box-sizing: border-box;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 8px;
+            top: 7px;
+            color: #706e6b;
+            font-size: 0.8rem;
+        }
+
+        .pills-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pill {
+            background: #f4f6f9;
+            border: 1px solid #d8dde6;
+            border-radius: 16px;
+            padding: 4px 12px;
+            font-size: 0.775rem;
+            font-weight: 600;
+            color: #3e3e3c;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill.active {
+            background: #0176d3;
+            color: #ffffff;
+            border-color: #0176d3;
+            box-shadow: 0 2px 4px rgba(1, 118, 211, 0.3);
+        }
+
+        .btn-brand {
+            background: #0176d3;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-success {
+            background: #2e844a;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 6px rgba(46, 132, 74, 0.3);
+        }
+
+        .btn-outline {
+            background: #ffffff;
+            color: #0176d3;
+            border: 1px solid #d8dde6;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        /* Grid Cards */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 20px;
+        }
+
+        .file-card {
+            background: #ffffff;
+            border: 1px solid #dddbda;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+            border-color: #0176d3;
+        }
+
+        .file-card.selected {
+            border: 2px solid #0176d3;
+            background: #f4f9fd;
+        }
+
+        .card-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            z-index: 5;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 4px;
+            padding: 2px 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .thumb-wrap {
+            height: 130px;
+            background: #ecebea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .thumb-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .thumb-doc {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .thumb-doc-icon {
+            font-size: 2.5rem;
+        }
+
+        .thumb-doc-badge {
+            background: #706e6b;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .thumb-doc-badge.pdf { background: #ba0517; }
+        .thumb-doc-badge.xlsx { background: #198754; }
+        .thumb-doc-badge.pptx { background: #d9534f; }
+        .thumb-doc-badge.docx { background: #0176d3; }
+
+        .quick-view-hover {
+            position: absolute;
+            inset: 0;
+            background: rgba(1, 118, 211, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .file-card:hover .quick-view-hover {
+            opacity: 1;
+        }
+
+        .card-info {
+            padding: 10px 12px 6px;
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 0.825rem;
+            font-weight: 600;
+            color: #181818;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #706e6b;
+            margin-top: 4px;
+        }
+
+        .card-actions {
+            padding: 6px 12px 8px;
+            border-top: 1px solid #f3f3f3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-icon {
+            color: #706e6b;
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 2px 4px;
+        }
+
+        .action-icon:hover {
+            color: #0176d3;
+        }
+
+        /* Lightbox Overlay */
+        .lightbox-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.92);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lightbox-topbar {
+            background: #181818;
+            color: white;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .lightbox-top-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .lightbox-top-sub {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .lightbox-main {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .lightbox-center-img {
+            max-width: 80%;
+            max-height: 65vh;
+            border-radius: 6px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: #0176d3;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-left { left: 24px; }
+        .nav-right { right: 24px; }
+
+        .filmstrip {
+            background: #1e1e1e;
+            border-top: 1px solid #333;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            overflow-x: auto;
+        }
+
+        .film-thumb {
+            width: 64px;
+            height: 48px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 2px solid #555;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .film-thumb.active {
+            opacity: 1;
+            border-color: #0176d3;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px rgba(1, 118, 211, 0.8);
+        }
+
+        /* Drag-and-Drop Area */
+        .drop-zone {
+            border: 2px dashed #0176d3;
+            background: #f4f9fd;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            margin: 16px 20px;
+        }
+
+        .drop-icon {
+            font-size: 2.5rem;
+            color: #0176d3;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-container {
+            width: 80%;
+            margin: 16px auto 0;
+            background: #e0e0e0;
+            border-radius: 6px;
+            overflow: hidden;
+            height: 10px;
+        }
+
+        .progress-fill {
+            width: 100%;
+            height: 100%;
+            background: #2e844a;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCENE CONTAINER (Control by hash or id) -->
+    <div id="app">
+        <!-- Record Page Header -->
+        <div class="record-header">
+            <div class="record-title">
+                <span>🏢 Acme Corp &mdash; Global Enterprise License</span>
+                <span class="record-badge">Opportunity</span>
+                <span class="stage-badge">Closed Won ($450,000)</span>
+            </div>
+            <div style="font-size: 0.8rem; color: #706e6b;">
+                <strong>Owner:</strong> Arsalan Arshad &bull; <strong>Account:</strong> Acme Corporation
+            </div>
+        </div>
+
+        <div class="main-container">
+            <!-- 1. RESPONSIVE THUMBNAIL GRID -->
+            <div id="view-grid" class="slds-card slds-m-bottom_large">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <span style="font-size: 1.25rem;">📁</span>
+                        <h2 class="card-header-title">Files & Attachments</h2>
+                        <span class="header-badge">6 Files</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-outline">Switch to List</button>
+                        <button class="btn-outline">↻ Refresh</button>
+                        <button class="btn-brand">⬆ Upload Files</button>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" class="search-input" placeholder="Search 6 files...">
+                    </div>
+                    <div class="pills-group">
+                        <div class="pill active">All (6)</div>
+                        <div class="pill">Images (2)</div>
+                        <div class="pill">PDFs (2)</div>
+                        <div class="pill">Docs (1)</div>
+                        <div class="pill">Sheets (1)</div>
+                    </div>
+                    <div>
+                        <button class="btn-outline">Select All</button>
+                    </div>
+                </div>
+
+                <div class="file-grid">
+                    <!-- File 1: Image -->
+                    <div class="file-card">
+                        <div class="card-checkbox"><input type="checkbox"></div>
+                        <div class="thumb-wrap">
+                            <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80" class="thumb-img" alt="Architecture">
+                            <div class="quick-view-hover"><span>👁 Quick View</span></div>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title" title="System_Architecture_Topology_2026.png">System_Architecture_Topology.png</div>
+                            <div class="card-meta"><span>1.4 MB</span><span>Oct 4, 2026</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="action-icon">👁</span>
+                            <span class="action-icon">⬇</span>
+                            <span class="action-icon">⋮</span>
+                        </div>
+                    </div>
+
+                    <!-- File 2: PDF -->
+                    <div class="file-card">
+                        <div class="card-checkbox"><input type="checkbox"></div>
+                        <div class="thumb-wrap">
+                            <div class="thumb-doc">
+                                <span class="thumb-doc-icon">📄</span>
+                                <span class="thumb-doc-badge pdf">PDF</span>
+                            </div>
+                            <div class="quick-view-hover"><span>👁 Quick View</span></div>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title" title="Acme_Enterprise_MSA_Executed.pdf">Acme_Enterprise_MSA_Executed.pdf</div>
+                            <div class="card-meta"><span>820 KB</span><span>Oct 5, 2026</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="action-icon">👁</span>
+                            <span class="action-icon">⬇</span>
+                            <span class="action-icon">⋮</span>
+                        </div>
+                    </div>
+
+                    <!-- File 3: Spreadsheet -->
+                    <div class="file-card">
+                        <div class="card-checkbox"><input type="checkbox"></div>
+                        <div class="thumb-wrap">
+                            <div class="thumb-doc">
+                                <span class="thumb-doc-icon">📊</span>
+                                <span class="thumb-doc-badge xlsx">XLSX</span>
+                            </div>
+                            <div class="quick-view-hover"><span>👁 Quick View</span></div>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title" title="Q4_Pricing_Schedule_Calculations.xlsx">Q4_Pricing_Schedule.xlsx</div>
+                            <div class="card-meta"><span>450 KB</span><span>Oct 6, 2026</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="action-icon">👁</span>
+                            <span class="action-icon">⬇</span>
+                            <span class="action-icon">⋮</span>
+                        </div>
+                    </div>
+
+                    <!-- File 4: Image 2 -->
+                    <div class="file-card">
+                        <div class="card-checkbox"><input type="checkbox"></div>
+                        <div class="thumb-wrap">
+                            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80" class="thumb-img" alt="Headquarters">
+                            <div class="quick-view-hover"><span>👁 Quick View</span></div>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title" title="Acme_HQ_Deployment_Site.jpg">Acme_HQ_Site_Photo.jpg</div>
+                            <div class="card-meta"><span>2.1 MB</span><span>Oct 7, 2026</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="action-icon">👁</span>
+                            <span class="action-icon">⬇</span>
+                            <span class="action-icon">⋮</span>
+                        </div>
+                    </div>
+
+                    <!-- File 5: Word Doc -->
+                    <div class="file-card">
+                        <div class="card-checkbox"><input type="checkbox"></div>
+                        <div class="thumb-wrap">
+                            <div class="thumb-doc">
+                                <span class="thumb-doc-icon">📝</span>
+                                <span class="thumb-doc-badge docx">DOCX</span>
+                            </div>
+                            <div class="quick-view-hover"><span>👁 Quick View</span></div>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title" title="Statement_of_Work_Final_v3.docx">Statement_of_Work_Final.docx</div>
+                            <div class="card-meta"><span>320 KB</span><span>Oct 8, 2026</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="action-icon">👁</span>
+                            <span class="action-icon">⬇</span>
+                            <span class="action-icon">⋮</span>
+                        </div>
+                    </div>
+
+                    <!-- File 6: Presentation -->
+                    <div class="file-card">
+                        <div class="card-checkbox"><input type="checkbox"></div>
+                        <div class="thumb-wrap">
+                            <div class="thumb-doc">
+                                <span class="thumb-doc-icon">📑</span>
+                                <span class="thumb-doc-badge pptx">PPTX</span>
+                            </div>
+                            <div class="quick-view-hover"><span>👁 Quick View</span></div>
+                        </div>
+                        <div class="card-info">
+                            <div class="card-title" title="Board_Executive_Summary_Deck.pptx">Executive_Summary_Deck.pptx</div>
+                            <div class="card-meta"><span>5.8 MB</span><span>Oct 8, 2026</span></div>
+                        </div>
+                        <div class="card-actions">
+                            <span class="action-icon">👁</span>
+                            <span class="action-icon">⬇</span>
+                            <span class="action-icon">⋮</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. BULK ZIP DOWNLOAD VIEW -->
+            <div id="view-bulk" class="slds-card slds-m-bottom_large" style="display:none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <span style="font-size: 1.25rem;">📦</span>
+                        <h2 class="card-header-title">Files & Attachments</h2>
+                        <span class="header-badge">4 Files Selected</span>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-success">⬇ Download Selected (4) as ZIP</button>
+                        <button class="btn-outline">✕ Clear Selection</button>
+                    </div>
+                </div>
+                <div style="background: #eef7ee; border-left: 4px solid #2e844a; padding: 10px 20px; font-size: 0.825rem; color: #1b5e20;">
+                    ✅ <strong>1-Click Bulk ZIP Engine Active:</strong> 4 files selected (4.6 MB total). Click green button to trigger instant single-archive ZIP download.
+                </div>
+                <div class="file-grid">
+                    <div class="file-card selected">
+                        <div class="card-checkbox"><input type="checkbox" checked></div>
+                        <div class="thumb-wrap"><img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80" class="thumb-img"></div>
+                        <div class="card-info"><div class="card-title">System_Architecture_Topology.png</div><div class="card-meta"><span>1.4 MB</span><span>Selected</span></div></div>
+                    </div>
+                    <div class="file-card selected">
+                        <div class="card-checkbox"><input type="checkbox" checked></div>
+                        <div class="thumb-wrap"><div class="thumb-doc"><span class="thumb-doc-icon">📄</span><span class="thumb-doc-badge pdf">PDF</span></div></div>
+                        <div class="card-info"><div class="card-title">Acme_Enterprise_MSA_Executed.pdf</div><div class="card-meta"><span>820 KB</span><span>Selected</span></div></div>
+                    </div>
+                    <div class="file-card selected">
+                        <div class="card-checkbox"><input type="checkbox" checked></div>
+                        <div class="thumb-wrap"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=500&auto=format&fit=crop&q=80" class="thumb-img"></div>
+                        <div class="card-info"><div class="card-title">Acme_HQ_Site_Photo.jpg</div><div class="card-meta"><span>2.1 MB</span><span>Selected</span></div></div>
+                    </div>
+                    <div class="file-card selected">
+                        <div class="card-checkbox"><input type="checkbox" checked></div>
+                        <div class="thumb-wrap"><div class="thumb-doc"><span class="thumb-doc-icon">📝</span><span class="thumb-doc-badge docx">DOCX</span></div></div>
+                        <div class="card-info"><div class="card-title">Statement_of_Work_Final.docx</div><div class="card-meta"><span>320 KB</span><span>Selected</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. DRAG-AND-DROP UPLOADER VIEW -->
+            <div id="view-upload" class="slds-card slds-m-bottom_large" style="display:none;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <span style="font-size: 1.25rem;">☁</span>
+                        <h2 class="card-header-title">Direct Drag-and-Drop Uploader</h2>
+                    </div>
+                    <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">
+                        🤖 Agentforce AI & Flow Ready
+                    </span>
+                </div>
+                <div class="drop-zone">
+                    <div class="drop-icon">☁ ⬆</div>
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0 0 6px;">Drop files to link with Opportunity</h3>
+                    <p style="font-size: 0.825rem; color: #706e6b; margin: 0;">PDF, Images, Word, Excel, PowerPoint or CSV (up to 2GB per file)</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #2e844a; font-weight: 700; margin-top: 8px;">
+                        ✔ 2 files uploaded and linked to Opportunity Acme Corp (100%)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. FULLSCREEN LIGHTBOX VIEW -->
+        <div id="view-lightbox" class="lightbox-backdrop" style="display:none;">
+            <div class="lightbox-topbar">
+                <div>
+                    <div class="lightbox-top-title">System_Architecture_Topology.png</div>
+                    <div class="lightbox-top-sub">PNG Image &bull; 1.4 MB &bull; File 1 of 6 &bull; Created by Arsalan Arshad</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-outline" style="color: white; border-color: #555; background: #333;">⬇ Download</button>
+                    <button class="btn-outline" style="color: white; border-color: #555; background: #333;">↗ View in Salesforce</button>
+                    <button class="btn-outline" style="color: white; border-color: #555; background: #444;">✕ Close</button>
+                </div>
+            </div>
+            <div class="lightbox-main">
+                <button class="nav-btn nav-left">‹</button>
+                <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80" class="lightbox-center-img" alt="Lightbox Preview">
+                <button class="nav-btn nav-right">›</button>
+            </div>
+            <div class="filmstrip">
+                <div class="film-thumb active">
+                    <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=100&auto=format&fit=crop&q=80" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div class="film-thumb">
+                    <span style="font-size:1.1rem;">📄</span>
+                </div>
+                <div class="film-thumb">
+                    <span style="font-size:1.1rem;">📊</span>
+                </div>
+                <div class="film-thumb">
+                    <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=100&auto=format&fit=crop&q=80" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div class="film-thumb">
+                    <span style="font-size:1.1rem;">📝</span>
+                </div>
+                <div class="film-thumb">
+                    <span style="font-size:1.1rem;">📑</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showView(viewId) {
+            document.getElementById('view-grid').style.display = 'none';
+            document.getElementById('view-bulk').style.display = 'none';
+            document.getElementById('view-upload').style.display = 'none';
+            document.getElementById('view-lightbox').style.display = 'none';
+
+            if (viewId === 'grid') {
+                document.getElementById('view-grid').style.display = 'block';
+            } else if (viewId === 'bulk') {
+                document.getElementById('view-bulk').style.display = 'block';
+            } else if (viewId === 'upload') {
+                document.getElementById('view-upload').style.display = 'block';
+            } else if (viewId === 'lightbox') {
+                document.getElementById('view-lightbox').style.display = 'flex';
+            }
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const view = params.get('view') || 'grid';
+        showView(view);
+    </script>
+</body>
+</html>

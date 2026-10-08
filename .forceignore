@@ -18,3 +18,4 @@ node_modules/
 assets/**
 jest.config.js
 force-app/test/**
+interactive_demo.html
