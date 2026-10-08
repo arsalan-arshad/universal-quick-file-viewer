@@ -6,6 +6,7 @@
     "lint": "eslint force-app/main/default/lwc/**/*.js",
     "prettier": "prettier --write \"force-app/**/*.{cls,js,html,css,json,md}\"",
     "prettier:check": "prettier --check \"force-app/**/*.{cls,js,html,css,json,md}\"",
+    "test": "npm run test:unit",
     "test:unit": "sfdx-lwc-jest -- --no-watchman"
   },
   "devDependencies": {
