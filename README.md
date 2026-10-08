@@ -1,38 +1,56 @@
 # Universal Quick File Viewer & Bulk Downloader
 
-> **Open-Source (MIT)** | Built for the Trailblazer & Salesforce Developer Community | Open for PRs & Discussions
+> **Open-Source (MIT)** | Built for the Trailblazer & Salesforce Developer Community | Part of the Salesforce Open-Source Ecosystem Portfolio
+
+---
 
 ## 1. Overview & Vision
 Standard Salesforce "Files" related lists on record pages are sluggish and inefficient:
-- Users have to click into a file, wait for the preview modal to render, close it, and repeat for every single attachment.
-- Downloading multiple files requires opening each file individually or building complex zip logic.
-- File previews don't show high-resolution thumbnails in a modern grid or filmstrip.
+- Users must click into every individual file, wait for the standard modal to render, close it, and repeat for each attachment.
+- Downloading multiple files requires opening each file one by one or constructing complex custom zip flows.
+- Standard file previews don't show high-resolution thumbnails in a modern responsive gallery.
 
-**Universal Quick File Viewer** is an open-source LWC component that can be dropped onto any Record Page (Account, Case, Opportunity, Custom Object) to provide an instant gallery, full-screen lightbox previewer, and 1-click bulk download.
+**Universal Quick File Viewer** is an open-source LWC component that can be dropped onto any standard or custom Record Page (Account, Case, Opportunity, Work Order, Custom Object) to provide an instant gallery, full-screen lightbox previewer, and 1-click bulk download.
 
-## 2. Core Features (MVP)
-- **Instant Visual Gallery / Grid:**
-  - Responsive grid layout displaying clear file thumbnails (PDFs, PNG, JPG, Word, Excel).
-  - Badge overlays showing file extension and file size.
-- **Lightbox / Filmstrip Modal:**
-  - Arrow navigation to flip through all record attachments without closing and reopening modals.
-  - Keyboard shortcuts (`Esc` to close, `Left`/`Right` arrow keys to navigate).
-- **1-Click Bulk Zip / Download:**
-  - Checkboxes to select multiple files $\rightarrow$ downloads all selected files in one action.
-- **Drag-and-Drop Uploader:**
-  - Modern drag-and-drop zone directly inside the component that links files to the current record instantly.
+---
 
-## 3. Architecture & Tech Stack
-- **Frontend:** Lightning Web Components (LWC), JSZip library (static resource for client-side zipping).
-- **Backend:** Apex (`FileViewerController.cls`) querying `ContentDocumentLink`, `ContentVersion`, and `ContentDocument`.
-- **Packaging:** Unlocked / Managed 2GP Package with App Builder configuration options (customizable title, columns, allowed extensions).
+## 2. Killer Differentiators & Features
+- 🖼️ **Instant Visual Gallery / Grid:**
+  - Modern responsive card layout displaying clean thumbnails (PDFs, PNG, JPG, Word, Excel, CSV).
+  - Badge overlays showing file extension, version size, and creation timestamp.
+- 🔍 **Full-Screen Lightbox / Filmstrip Modal:**
+  - Flip through all attachments sequentially without closing and reopening modals.
+  - Keyboard navigation shortcuts (`Esc` to close, `←` / `→` arrow keys to flip).
+- 📦 **1-Click Bulk Zip & Download:**
+  - Multi-select checkboxes $\rightarrow$ downloads all selected files as a single clean `.zip` archive via client-side JSZip.
+- 📂 **Direct Drag-and-Drop Uploader:**
+  - Native upload zone within the component that automatically links dropped files to the active record.
+- 🤖 **Agentforce & Flow AI Ready:**
+  - Invocable action enabling autonomous AI agents to query record attachments, inspect file metadata, and retrieve content versions conversationally.
 
-## 4. AppExchange & Community Strategy
-- **Audience:** Customer Support (Cases), Sales reps (Proposals/NDAs), Field Service, Real Estate / Legal Salesforce users.
-- **Value Proposition:** Replaces 5+ clicks with 1 hover/click. Massive daily time saver.
+---
 
-## 5. Open-Source Roadmap & Good First Issues for PRs
-- [ ] Multi-page PDF inline flipper directly in the thumbnail card.
-- [ ] Tagging and categorizing files by custom tags.
-- [ ] Video/Audio media playback inside the lightbox.
-- [ ] Bulk file renaming utility modal.
+## 3. Standardized 4-Phase Delivery Roadmap
+
+### 📋 Phase 1: Local Development & Differentiators
+- [ ] Apex Service Layer (`FileViewerController.cls`) querying `ContentDocumentLink`, `ContentVersion`, and `ContentDocument` with `Security.stripInaccessible`.
+- [ ] LWC Component Suite (`universalQuickFileViewer`, `fileCard`, `fileLightbox`, `fileUploader`).
+- [ ] Client-side JSZip static resource integration for instant multi-file zipping.
+- [ ] $\ge 85\%$ Apex unit test coverage (`FileViewerControllerTest.cls`) and Jest test suite.
+
+### 📋 Phase 2: GitHub & Open-Source Engineering
+- [ ] Git repository initialized: `github.com/arsalan-arshad/universal-quick-file-viewer`.
+- [ ] Automated GitHub Actions CI workflow (`.github/workflows/ci.yml`) for linting, PMD, and automated testing.
+- [ ] Automated CD workflow (`.github/workflows/cd.yml`) for continuous deployment on merge.
+- [ ] Protected `main` branch ruleset requiring passing checks.
+
+### 📋 Phase 3: 2GP Packaging & Distribution
+- [ ] Second-Generation (2GP) Unlocked Package created: `UniversalQuickFileViewer`.
+- [ ] Package version built and validated against code coverage requirements.
+- [ ] Promoted to **`Released`** status.
+- [ ] Direct 1-Click Install URLs generated for Production and Sandbox.
+
+### 📋 Phase 4: Branding & AppExchange Readiness
+- [ ] 7 Visual Assets: App Icon (120x120), Hero Banner (16:9), and 4 UI walkthrough screenshots.
+- [ ] Production-grade `README.md` with demo carousels and Trailblazer setup instructions.
+- [ ] Complete `APPEXCHANGE_LISTING.md` submission dossier (titles, taglines, security questionnaire).
